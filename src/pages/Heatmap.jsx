@@ -2,37 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { collection,getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
 function Heatmap() {
   const [reportedLocations, setReportedLocations] = useState([]);
   const [position, setPosition] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "locations"));
+  const fetchData = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'locations'));
       const locations = [];
-      querySnapshot.forEach(doc => {
-
+      querySnapshot.forEach((doc) => {
         const lat = doc.data().location[0];
         const lng = doc.data().location[1];
-      
         locations.push([lat, lng]);
-      
-      })
+      });
       console.log(locations);
       setReportedLocations(locations);
+    } catch (error) {
+      console.error('Error fetching locations:', error);
     }
-  
+  };
+
+  useEffect(() => {
+    // Initial fetch
     fetchData();
+
+    // Set up interval to fetch locations every 1 hour (3600 seconds)
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 3600000); // 1 hour in milliseconds
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   // Calculate the average coordinates to center the map
-  const averageCoordinate = reportedLocations.reduce(
-    (sum, location) => [sum[0] + location[0] / reportedLocations.length, sum[1] + location[1] / reportedLocations.length],
-    [0, 0]
-  );
+  const averageCoordinate = reportedLocations.length > 0
+    ? reportedLocations.reduce(
+        (sum, location) => [sum[0] + location[0] / reportedLocations.length, sum[1] + location[1] / reportedLocations.length],
+        [0, 0]
+      )
+    : [0, 0];
 
   // Custom icon for markers
   const customIcon = new L.Icon({
