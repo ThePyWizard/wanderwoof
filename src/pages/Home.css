@@ -1,0 +1,15 @@
+/* Home.css */
+
+.report,
+.heatmap {
+  /* Add your default styles here */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition for background-color and color over 0.3 seconds */
+}
+
+.report:hover,
+.heatmap:hover {
+  /* Add your hover styles here */
+  background-color: #ffffff; /* Example background color change on hover */
+  color: #000000; /* Example text color change on hover */
+  cursor: pointer; /* Change cursor on hover */
+}
