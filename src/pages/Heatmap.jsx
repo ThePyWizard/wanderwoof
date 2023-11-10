@@ -18,10 +18,7 @@ function Heatmap() {
         const lat = doc.data().location[0];
         const lng = doc.data().location[1];
       
-        locations.push({
-          lat,
-          lng  
-        });
+        locations.push([lat, lng]);
       
       })
       console.log(locations);
