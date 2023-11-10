@@ -2,40 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection,getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
 function Heatmap() {
   const [reportedLocations, setReportedLocations] = useState([]);
+  const [position, setPosition] = useState(null);
 
   useEffect(() => {
-    const fetchReportedLocations = async () => {
-      try {
-        const locationsCollection = collection(db, 'locations');
-        const locationsSnapshot = await getDocs(locationsCollection);
+    const fetchData = async () => {
+      const querySnapshot = await getDocs(collection(db, "locations"));
+      const locations = [];
+      querySnapshot.forEach(doc => {
 
-        const locationsData = [];
-        locationsSnapshot.forEach((doc) => {
-          const coordinates = doc.data().coordinates; // Assuming the field name in your Firestore document is "coordinates"
-          locationsData.push(coordinates);
+        const lat = doc.data().location[0];
+        const lng = doc.data().location[1];
+      
+        locations.push({
+          lat,
+          lng  
         });
-
-        setReportedLocations(locationsData);
-      } catch (error) {
-        console.error('Error fetching locations:', error);
-      }
-    };
-
-    fetchReportedLocations();
+      
+      })
+      console.log(locations);
+      setReportedLocations(locations);
+    }
+  
+    fetchData();
   }, []);
 
   // Calculate the average coordinates to center the map
-  const averageCoordinate = reportedLocations.length > 0
-    ? reportedLocations.reduce(
-        (sum, location) => [sum[0] + location[0] / reportedLocations.length, sum[1] + location[1] / reportedLocations.length],
-        [0, 0]
-      )
-    : [0, 0];
+  const averageCoordinate = reportedLocations.reduce(
+    (sum, location) => [sum[0] + location[0] / reportedLocations.length, sum[1] + location[1] / reportedLocations.length],
+    [0, 0]
+  );
 
   // Custom icon for markers
   const customIcon = new L.Icon({
